@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/spiegel-im-spiegel/pf"
 )
@@ -13,12 +12,13 @@ import (
 func main() {
 	flag.Parse()
 	argsStr := flag.Args()
-	if len(argsStr) < 2 {
-		fmt.Fprintln(os.Stderr, "年月を指定してください")
+	ln := len(argsStr)
+	if ln < 2 {
+		fmt.Fprintln(os.Stderr, "年月（日）を指定してください")
 		return
 	}
-	args := make([]int, 2)
-	for i := 0; i < 2; i++ {
+	args := make([]int, ln)
+	for i := 0; i < ln; i++ {
 		num, err := strconv.Atoi(argsStr[i])
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -26,10 +26,16 @@ func main() {
 		}
 		args[i] = num
 	}
-	d, err := pf.GetPremiumFriday(args[0], time.Month(args[1]))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	if ln == 2 {
+		dt := pf.NewYearMonth(args[0], args[1])
+		d, err := dt.GetPremiumFriday()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+		fmt.Println(d)
 		return
 	}
-	fmt.Println(d)
+	dt := pf.NewDate(args[0], args[1], args[2])
+	fmt.Println(dt.IsPremiumFriday())
 }
